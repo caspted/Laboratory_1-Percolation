@@ -1,4 +1,4 @@
-class Percolation {
+export default class Percolation {
   private grid: boolean[][]
   private n: number
   private openSites: number
@@ -9,40 +9,46 @@ class Percolation {
     this.openSites = 0
   }
 
-  open (row: number, col: number): void {
-    if (this.isValidIndex(row, col)) {
-      this.grid[row][col] = true
+  private isValid(row: number, column: number): boolean {
+    return row >= 0 && row < this.n && column >= 0 && column < this.n
+  }
+
+  open(row: number, column: number): void {
+    if (this.isValid(row, column)) {
+      this.grid[row][column] = true
       this.openSites++
     } else {
       throw new Error('Invalid indices')
     }
   }
 
-  isOpen (row: number, col: number): boolean {
-    if (this.isValidIndex(row, col)) {
-      return this.grid[row][col]
+  isOpen(row: number, column: number): boolean {
+    if (this.isValid(row, column)) {
+      return this.grid[row][column]
     } else {
       throw new Error('Invalid indices')
     }
   }
 
-  isFull (row: number, col: number): boolean {
-    if (this.isValidIndex(row, col)) {
+  isFull(row: number, column: number): boolean {
+    if (this.isValid(row, column)) {
       return true
     } else {
       throw new Error('Invalid indices')
     }
   }
 
-  numberOfOpenSites (): number {
+  numberOfOpenSites(): number {
     return this.openSites
   }
 
-  percolates (): boolean {
-    return true
+  percolates(): boolean {
+    for (let i = 0; i < this.n; i++) {
+      if (this.isOpen(this.n - 1, i)) {
+        return true
+      }
+    }
+    return false
   }
 
-  private isValidIndex (row: number, col: number): boolean {
-    return row >= 0 && row < this.n && col >= 0 && col < this.n
-  }
 }
