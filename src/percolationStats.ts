@@ -1,46 +1,59 @@
-import Percolation from './percolation'
+import Percolation from './percolation';
 
-export default class PercolationStats {
-  private thresholdValues: number[] = []
+class PercolationStats {
+  private thresholdValues: number[] = [];
 
   constructor(n: number, trials: number) {
     if (n <= 0 || trials <= 0) {
-      throw new Error('Both grid and trials must be greater than or equal to 0')
+      throw new Error('Both grid size and trials must be greater than 0');
     }
 
     for (let i = 0; i < trials; i++) {
-      const percolation = new Percolation(n)
-      while(!percolation.percolates()) {
-        const row = Math.floor(Math.random() * n)
-        const column = Math.floor(Math.random() * n)
-        percolation.open(row, column)
+      const percolation = new Percolation(n);
+      let openedSites = 0;
+
+      while (!percolation.percolates() && openedSites < n * n) {
+        const row = Math.floor(Math.random() * n);
+        const column = Math.floor(Math.random() * n);
+
+        if (!percolation.isOpen(row, column)) {
+          percolation.open(row, column);
+          openedSites++;
+        }
       }
-      const threshold = percolation.numberOfOpenSites() / (n * n)
-      this.thresholdValues.push(threshold)
+
+      const threshold = openedSites / (n * n);
+      this.thresholdValues.push(threshold);
     }
   }
 
   mean(): number {
-    return this.thresholdValues.reduce((sum, values) => sum + values, 0) / this.thresholdValues.length
+    const sum = this.thresholdValues.reduce((acc, value) => acc + value, 0);
+    return sum / this.thresholdValues.length;
   }
 
   stddev(): number {
-    const meanValue = this.mean()
-    const squaredDifferences = this.thresholdValues.reduce((sum, values) => 
-      sum + (values - meanValue) ** 2, 0
-    )
-    return Math.sqrt(squaredDifferences / (this.thresholdValues.length - 1))
+    const mean = this.mean();
+    const sumSquaredDiffs = this.thresholdValues.reduce(
+      (acc, value) => acc + Math.pow(value - mean, 2),
+      0
+    );
+    return Math.sqrt(sumSquaredDiffs / (this.thresholdValues.length - 1));
   }
 
   confidenceLow(): number {
-    const mean = this.mean()
-    const standardDeviation = this.stddev()
-    return mean - (1.96 * standardDeviation) / Math.sqrt(this.thresholdValues.length)
+    const mean = this.mean();
+    const stddev = this.stddev();
+    const sqrtT = Math.sqrt(this.thresholdValues.length);
+    return mean - (1.96 * stddev) / sqrtT;
   }
 
   confidenceHigh(): number {
-    const mean = this.mean()
-    const standardDeviation = this.stddev()
-    return mean + (1.96 * standardDeviation) / Math.sqrt(this.thresholdValues.length)
+    const mean = this.mean();
+    const stddev = this.stddev();
+    const sqrtT = Math.sqrt(this.thresholdValues.length);
+    return mean + (1.96 * stddev) / sqrtT;
   }
 }
+
+export default PercolationStats;
